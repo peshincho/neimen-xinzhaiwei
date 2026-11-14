@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>內門新齋味｜年菜訂購</title>
+<style>
+body{margin:0;background:#fff8f0;color:#38251d;font-family:Arial,sans-serif}
+header{background:#9d1725;color:white;text-align:center;padding:35px 15px}
+h1{margin:0;font-size:34px}
+header p{color:#ffe1a1}
+nav{text-align:center;background:#f6dfb6;padding:15px}
+nav a{margin:10px;color:#8d1720;font-weight:bold}
+main{max-width:1000px;margin:auto;padding:20px}
+h2{color:#9d1725;border-bottom:2px solid #d7aa60;padding-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 9px #0001}
+.price{color:#b21d29;font-weight:bold;font-size:20px}
+button{background:#a21e2c;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer}
+.small{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #eee;padding:15px 0}
+footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:40px}
+</style>
+</head>
+<body>
+<header>
+<h1>內門新齋味</h1>
+<p>傳承辦桌好滋味・團圓年菜幸福上桌</p>
+</header>
+<nav>
+<a href="#products">經典年菜</a>
+<a href="#family">小家庭專區</a>
+<a href="#cart">購物車</a>
+</nav>
+<main>
+<section id="products">
+<h2>經典年菜</h2>
+<div class="grid" id="productList"></div>
+</section>
+<section id="family">
+<h2>小家庭專區</h2>
+<div id="familyList"></div>
+</section>
+<section id="cart">
+<h2>我的購物車</h2>
+<div id="cartList">尚未選購商品</div>
+<h3 id="total">商品合計：NT$0</h3>
+<p>滿 NT$4,250 免運，未滿運費 NT$290。</p>
+</section>
+</main>
+<footer>內門新齋味｜傳統辦桌年菜</footer>
+<script>
+const products=[
+["魚翅海鮮羹",550],
+["唐朝一品(腳庫)",650],
+["唐朝一品(封肉)",700],
+["櫻花蝦米糕",400],
+["蝦仁肉捲(八寶丸)",350],
+["蛋黃芋丸",250],
+["醬燒豬肋排",600],
+["紹興醉蝦",500],
+["鮑魚佛跳牆",800],
+["何首烏藥膳雞",600],
+["古早味香酥鴨",550],
+["醉雞腿",400],
+["紅燒海鱸魚",450],
+["團圓桌菜組",4250]
+];
+const family=[
+["魚翅海鮮羹(小家庭)",350],
+["唐朝一品(小封一斤)",400],
+["櫻花蝦米糕(小家庭)",230],
+["香滷筍乾(一斤)",150]
+];
+const cart=[];
+function add(name,price){
+const item=cart.find(x=>x.name===name);
+if(item)item.qty++;
+else cart.push({name,price,qty:1});
+renderCart();
+}
+function renderCart(){
+let sum=cart.reduce((s,x)=>s+x.price*x.qty,0);
+document.getElementById("cartList").innerHTML=
+cart.length?cart.map((x,i)=>`
+<div class="small">
+<span>${x.name} × ${x.qty}</span>
+<span>NT$${x.price*x.qty}
+<button onclick="removeItem(${i})">移除一件</button></span>
+</div>`).join(""):"尚未選購商品";
+document.getElementById("total").textContent=
+"商品合計：NT$"+sum+
+"｜含運預估：NT$"+(sum?sum+(sum>=4250?0:290):0);
+}
+function removeItem(i){
+cart[i].qty--;
+if(cart[i].qty===0)cart.splice(i,1);
+renderCart();
+}
+document.getElementById("productList").innerHTML=
+products.map(([n,p],i)=>`
+<div class="card">
+<h3>${n}</h3>
+<p class="price">NT$${p}</p>
+<button onclick="add(products[${i}][0],products[${i}][1])">加入購物車</button>
+</div>`).join("");
+document.getElementById("familyList").innerHTML=
+family.map(([n,p],i)=>`
+<div class="small">
+<span>${n}<br><strong>NT$${p}</strong></span>
+<button onclick="add(family[${i}][0],family[${i}][1])">加入購物車</button>
+</div>`).join("");
+</script>
+</body>
+</html>
