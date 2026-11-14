@@ -6,113 +6,113 @@
 <title>內門新齋味｜年菜訂購</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#fff8f0;color:#38251d;font-family:Arial,sans-serif}
+body{margin:0;background:#fff8f0;color:#38251d;font-family:Arial,'Noto Sans TC',sans-serif}
 header{background:#9d1725;color:white;text-align:center;padding:35px 15px}
-h1{margin:0;font-size:34px}
-header p{color:#ffe1a1}
+h1{margin:0;font-size:34px}header p{color:#ffe1a1}
 nav{text-align:center;background:#f6dfb6;padding:15px}
 nav a{display:inline-block;margin:5px 10px;color:#8d1720;font-weight:bold}
 main{max-width:1000px;margin:auto;padding:20px}
 h2{color:#9d1725;border-bottom:2px solid #d7aa60;padding-bottom:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 9px #0001}
-.product-photo{display:block;width:100%;height:200px;object-fit:cover;border-radius:10px}
+.product-photo{display:block;width:100%;height:200px;object-fit:cover;border-radius:10px;background:#f7ede1}
 .price{color:#b21d29;font-weight:bold;font-size:20px}
-button{background:#a21e2c;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer}
+button{background:#a21e2c;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-size:15px}
+button:hover{background:#801621}
 .small{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #eee;padding:15px 0}
-.small span{min-width:0}
+.small span{min-width:0}.cart-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.cart-actions button{padding:8px}
 footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:40px}
+.notice{font-size:14px;color:#725d50}
+@media(max-width:480px){h1{font-size:29px}.small{align-items:flex-start}.cart-actions{max-width:52%}}
 </style>
 </head>
 <body>
-<header>
-<h1>內門新齋味</h1>
-<p>傳承辦桌好滋味・團圓年菜幸福上桌</p>
-</header>
-<nav>
-<a href="#products">經典年菜</a>
-<a href="#family">小家庭專區</a>
-<a href="#cart">購物車</a>
-</nav>
+<header><h1>內門新齋味</h1><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
+<nav><a href="#products">經典年菜</a><a href="#family">小家庭專區</a><a href="#cart">購物車</a></nav>
 <main>
-<section id="products">
-<h2>經典年菜</h2>
-<div class="grid" id="productList"></div>
-</section>
-<section id="family">
-<h2>小家庭專區</h2>
-<div id="familyList"></div>
-</section>
-<section id="cart">
-<h2>我的購物車</h2>
-<div id="cartList">尚未選購商品</div>
-<h3 id="total">商品合計：NT$0</h3>
-<p>滿 NT$4,250 免運，未滿運費 NT$290。</p>
-</section>
+<section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
+<section id="family"><h2>小家庭專區</h2><div id="familyList"></div></section>
+<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">目前為商品選購與金額試算頁面，尚未開放線上送出訂單。</p></section>
 </main>
 <footer>內門新齋味｜傳統辦桌年菜</footer>
 <script>
+'use strict';
+const imageBase='https://jbwofjtmcvqmcapajtex.supabase.co/storage/v1/object/public/product-images/';
+// 照片檔名依先前整理；前三張已確認，其餘請在網站逐一核對菜色。
 const products=[
-["魚翅海鮮羹",550,"https://jbwofjtmcvqmcapajtex.supabase.co/storage/v1/object/public/product-images/IMG_0038.jpeg"],
-["唐朝一品(腳庫)",650,"https://jbwofjtmcvqmcapajtex.supabase.co/storage/v1/object/public/product-images/IMG_0040.jpeg"],
-["唐朝一品(封肉)",700,"https://jbwofjtmcvqmcapajtex.supabase.co/storage/v1/object/public/product-images/IMG_9774.jpeg"],
-["櫻花蝦米糕",400],
-["蝦仁肉捲(八寶丸)",350],
-["蛋黃芋丸",250],
-["醬燒豬肋排",600],
-["紹興醉蝦",500],
-["鮑魚佛跳牆",800],
-["何首烏藥膳雞",600],
-["古早味香酥鴨",550],
-["醉雞腿",400],
-["紅燒海鱸魚",450],
-["團圓桌菜組",4250]
+  ['魚翅海鮮羹',550,'IMG_0038.jpeg'],
+  ['唐朝一品(腳庫)',650,'IMG_0040.jpeg'],
+  ['唐朝一品(封肉)',700,'IMG_9774.jpeg'],
+  ['櫻花蝦米糕',400,'IMG_0039.jpeg'],
+  ['蝦仁肉捲(八寶丸)',350,'77E7146E-AD8B-4A4A-A625-912546D94BED.png'],
+  ['蛋黃芋丸',250,'342A275A-89CA-4A23-A964-0BF4E68F61CD.png'],
+  ['醬燒豬肋排',600,null],
+  ['紹興醉蝦',500,'IMG_0043.jpeg'],
+  ['鮑魚佛跳牆',800,'IMG_0041.jpeg'],
+  ['何首烏藥膳雞',600,'IMG_0036.jpeg'],
+  ['古早味香酥鴨',550,'IMG_0037.jpeg'],
+  ['醉雞腿',400,'IMG_0042.jpeg'],
+  ['紅燒海鱸魚',450,null],
+  ['團圓桌菜組',4250,null]
 ];
 const family=[
-["魚翅海鮮羹(小家庭)",350],
-["唐朝一品(小封一斤)",400],
-["櫻花蝦米糕(小家庭)",230],
-["香滷筍乾(一斤)",150]
+  ['魚翅海鮮羹(小家庭)',350],
+  ['唐朝一品(小封一斤)',400],
+  ['櫻花蝦米糕(小家庭)',230],
+  ['香滷筍乾(一斤)',150]
 ];
 const cart=[];
+const money=n=>'NT$'+n.toLocaleString('zh-TW');
 function add(name,price){
-const item=cart.find(x=>x.name===name);
-if(item)item.qty++;
-else cart.push({name,price,qty:1});
-renderCart();
-}
-function renderCart(){
-let sum=cart.reduce((s,x)=>s+x.price*x.qty,0);
-document.getElementById("cartList").innerHTML=
-cart.length?cart.map((x,i)=>`
-<div class="small">
-<span>${x.name} × ${x.qty}</span>
-<span>NT$${x.price*x.qty}
-<button onclick="removeItem(${i})">移除一件</button></span>
-</div>`).join(""):"尚未選購商品";
-document.getElementById("total").textContent=
-"商品合計：NT$"+sum+
-"｜含運預估：NT$"+(sum?sum+(sum>=4250?0:290):0);
+  const item=cart.find(x=>x.name===name);
+  if(item)item.qty++;
+  else cart.push({name,price,qty:1});
+  renderCart();
 }
 function removeItem(i){
-cart[i].qty--;
-if(cart[i].qty===0)cart.splice(i,1);
-renderCart();
+  if(!cart[i])return;
+  cart[i].qty--;
+  if(cart[i].qty===0)cart.splice(i,1);
+  renderCart();
 }
-document.getElementById("productList").innerHTML=
-products.map(([n,p,img],i)=>`
-<div class="card">
-${img ? `<img class="product-photo" src="${img}" alt="${n}" loading="lazy">` : ""}
-<h3>${n}</h3>
-<p class="price">NT$${p}</p>
-<button onclick="add(products[${i}][0],products[${i}][1])">加入購物車</button>
-</div>`).join("");
-document.getElementById("familyList").innerHTML=
-family.map(([n,p],i)=>`
-<div class="small">
-<span>${n}<br><strong>NT$${p}</strong></span>
-<button onclick="add(family[${i}][0],family[${i}][1])">加入購物車</button>
-</div>`).join("");
+function renderCart(){
+  const sum=cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const list=document.getElementById('cartList');
+  list.replaceChildren();
+  if(!cart.length){list.textContent='尚未選購商品';}
+  cart.forEach((x,i)=>{
+    const line=document.createElement('div');line.className='small';
+    const name=document.createElement('span');name.textContent=x.name+' × '+x.qty;
+    const right=document.createElement('span');right.className='cart-actions';
+    const amount=document.createElement('strong');amount.textContent=money(x.price*x.qty);
+    const remove=document.createElement('button');remove.type='button';remove.textContent='移除一件';remove.addEventListener('click',()=>removeItem(i));
+    right.append(amount,remove);line.append(name,right);list.append(line);
+  });
+  document.getElementById('total').textContent='商品合計：'+money(sum)+'｜含運預估：'+money(sum?sum+(sum>=4250?0:290):0);
+}
+function makeButton(name,price){
+  const button=document.createElement('button');button.type='button';button.textContent='加入購物車';
+  button.addEventListener('click',()=>add(name,price));return button;
+}
+const productList=document.getElementById('productList');
+products.forEach(([name,price,file])=>{
+  const card=document.createElement('div');card.className='card';
+  if(file){
+    const img=document.createElement('img');img.className='product-photo';img.src=imageBase+encodeURIComponent(file);
+    img.alt=name;img.loading='lazy';img.onerror=()=>img.remove();card.append(img);
+  }
+  const title=document.createElement('h3');title.textContent=name;
+  const amount=document.createElement('p');amount.className='price';amount.textContent=money(price);
+  card.append(title,amount,makeButton(name,price));productList.append(card);
+});
+const familyList=document.getElementById('familyList');
+family.forEach(([name,price])=>{
+  const line=document.createElement('div');line.className='small';
+  const info=document.createElement('span');info.textContent=name+'｜'+money(price);
+  line.append(info,makeButton(name,price));familyList.append(line);
+});
+renderCart();
 </script>
 </body>
 </html>
