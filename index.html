@@ -25,17 +25,21 @@ button:hover{background:#801621}
 footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:40px}
 .notice{font-size:14px;color:#725d50}
 @media(max-width:480px){h1{font-size:29px}.small{align-items:flex-start}.cart-actions{max-width:52%}}
+
+body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card:last-child{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card:last-child button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
+@media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
 </style>
 </head>
 <body>
-<header><h1>內門新齋味</h1><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
+<header><h1>內門新齋味</h1><h2>2027 新春年菜預購</h2><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
 <nav><a href="#products">經典年菜</a><a href="#family">小家庭專區</a><a href="#cart">購物車</a></nav>
-<main>
+<main><div class="offer"><strong>滿 NT$4,250 享免運</strong><br>訂購截止：2027/1/22<br>陸續出貨：1/25–2/1（依宅配公告調整）<br>未滿免運門檻，運費 NT$290</div>
 <section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
 <section id="family"><h2>小家庭專區</h2><div id="familyList"></div></section>
-<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">目前為商品選購與金額試算頁面，尚未開放線上送出訂單。</p></section>
+<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">送出訂單後，請等候店家確認。</p></section>
 </main>
 <footer>內門新齋味｜傳統辦桌年菜</footer>
+<a class="fixed-cart" id="fixedCart" href="#cart">購物車｜0 件｜NT$0</a>
 <script>
 'use strict';
 const imageBase='https://jbwofjtmcvqmcapajtex.supabase.co/storage/v1/object/public/product-images/';
@@ -78,6 +82,7 @@ function removeItem(i){
 }
 function renderCart(){
   const sum=cart.reduce((s,x)=>s+x.price*x.qty,0);
+  document.getElementById('fixedCart').textContent='購物車｜'+cart.reduce((s,x)=>s+x.qty,0)+' 件｜'+money(sum);
   const list=document.getElementById('cartList');
   list.replaceChildren();
   if(!cart.length){list.textContent='尚未選購商品';}
