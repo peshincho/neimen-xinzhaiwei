@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>內門新齋味｜管理後台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff8ed;color:#392b24;font-family:Arial,sans-serif}
+header{background:#861e25;color:#ffe2a0;padding:24px;text-align:center}
+header h1{margin:0 0 10px}
+main{max-width:1100px;margin:auto;padding:16px}
+.panel{background:white;padding:20px;border-radius:12px;margin-bottom:16px;border:1px solid #e7d5b6}
+input,button{font-size:16px;padding:12px;border-radius:8px;margin:6px 0}
+input{width:100%;border:1px solid #ccc}
+button{background:#861e25;color:white;border:0;cursor:pointer}
+button:disabled{opacity:.5}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:white;border:1px solid #e7d5b6;padding:16px;border-radius:10px}
+.stat strong{display:block;font-size:25px;color:#861e25;margin-top:8px}
+.order{background:white;border:1px solid #e7d5b6;border-radius:10px;padding:15px;margin:12px 0;overflow-wrap:anywhere}
+#message{white-space:pre-wrap;color:#a02020}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+<h1>內門新齋味</h1>
+2027 新春年菜｜管理後台
+</header>
+
+<main>
+<div id="message"></div>
+
+<section id="loginPanel" class="panel">
+<h2>管理員登入</h2>
+<form id="loginForm">
+<input id="email" type="email" placeholder="管理員電子郵件" autocomplete="username" required>
+<input id="password" type="password" placeholder="管理員密碼" autocomplete="current-password" required>
+<button type="submit" id="loginButton">登入管理後台</button>
+</form>
+</section>
+
+<section id="dashboard" hidden>
+<div class="panel">
+<strong>管理員專區</strong>
+<button id="logoutButton">登出</button>
+</div>
+
+<div class="stats">
+<div class="stat">全部訂單<strong id="count">0</strong></div>
+<div class="stat">待確認<strong id="pending">0</strong></div>
+<div class="stat">已確認<strong id="confirmed">0</strong></div>
+<div class="stat">訂單總金額<strong id="total">$0</strong></div>
+</div>
+
+<div class="panel">
+<h2>訂單管理</h2>
+<input id="search" placeholder="搜尋訂單編號、姓名、電話">
+<button id="refreshButton">重新整理</button>
+<button id="exportButton">匯出 CSV</button>
+<div id="orders"></div>
+</div>
+</section>
+</main>
+
+<script>
+const db = supabase.createClient(
+  "https://jbwofjtmcvqmcapajtex.supabase.co",
+  "sb_publishable_fxFpGtj8PqgAzwg3NdZelQ_Cz4WEwg1"
+);
+
+const $ = id => document.getElementById(id);
+let orders = [];
+
+function message(text){
+  $("message").textContent = text || "";
+}
+
+function money(n){
+  return "NT$ " + Number(n || 0).toLocaleString("zh-TW");
+}
+
+function clearData(){
+  orders = [];
+  $("orders").replaceChildren();
+  $("dashboard").hidden = true;
+  $("loginPanel").hidden = false;
+  $("password").value = "";
+  $("search").value = "";
+}
+
+async function checkAdmin(){
+  const {data,error} = await db.rpc("is_shop_admin");
+  if(error) throw error;
+  return data === true;
+}
+
+$("loginForm").onsubmit = async e => {
+  e.preventDefault();
+  $("loginButton").disabled = true;
+  message("登入中…");
+
+  try{
+    const {error} = await db.auth.signInWithPassword({
+      email:$("email").value.trim(),
+      password:$("password").value
+    });
+
+    $("password").value = "";
+    if(error) throw error;
+
+    if(!await checkAdmin()){
+      await db.auth.signOut();
+      throw new Error("此帳號沒有管理員權限");
+    }
+
+    $("loginPanel").hidden = true;
+    $("dashboard").hidden = false;
+    await loadOrders();
+
+  }catch(e){
+    clearData();
+    message("登入失敗："+e.message);
+  }finally{
+    $("loginButton").disabled = false;
+  }
+};
+
+async function loadOrders(){
+  message("讀取訂單中…");
+  try{
+    if(!await checkAdmin()){
+      clearData();
+      throw new Error("請重新登入管理員帳號");
+    }
+
+    let result = [];
+    let start = 0;
+
+    while(true){
+      const {data,error} = await db
+        .from("orders")
+        .select("*")
+        .order("order_no",{ascending:false})
+        .range(start,start+499);
+
+      if(error) throw error;
+      result.push(...data);
+      if(data.length<500) break;
+      start += 500;
+    }
+
+    orders = result;
+
+    $("count").textContent = orders.length;
+    $("pending").textContent =
+      orders.filter(o=>o.status==="待確認").length;
+    $("confirmed").textContent =
+      orders.filter(o=>o.status==="已確認").length;
+
+    $("total").textContent = money(
+      orders.filter(o=>o.status!=="已取消")
+      .reduce((sum,o)=>sum+Number(o.total||0),0)
+    );
+
+    renderOrders();
+    message("");
+  }catch(e){
+    orders = [];
+    $("orders").replaceChildren();
+    message("讀取失敗："+e.message);
+  }
+}
+
+function renderOrders(){
+  const root = $("orders");
+  root.replaceChildren();
+  const q = $("search").value.trim().toLowerCase();
+
+  const filtered = orders.filter(o=>
+    JSON.stringify(o).toLowerCase().includes(q)
+  );
+
+  if(!filtered.length){
+    root.textContent = "目前沒有符合的訂單";
+    return;
+  }
+
+  filtered.forEach(o=>{
+    const card = document.createElement("article");
+    card.className = "order";
+
+    const heading = document.createElement("h3");
+    heading.textContent = o.order_no || "訂單";
+    card.append(heading);
+
+    const summary = document.createElement("p");
+    summary.textContent =
+      (o.customer_name||"") + "｜" +
+      (o.status||"") + "｜" + money(o.total);
+    card.append(summary);
+
+    const btn = document.createElement("button");
+    btn.textContent = "查看訂單明細";
+    card.append(btn);
+
+    const detail = document.createElement("pre");
+    detail.hidden = true;
+    card.append(detail);
+
+    btn.onclick = async ()=>{
+      if(!detail.hidden){
+        detail.hidden = true;
+        btn.textContent = "查看訂單明細";
+        return;
+      }
+
+      detail.hidden = false;
+      detail.textContent = "讀取中…";
+      btn.textContent = "收起明細";
+
+      try{
+        if(!await checkAdmin()){
+          clearData();
+          return;
+        }
+
+        const labels = {
+          order_no:"訂單編號",
+          customer_name:"顧客姓名",
+          phone:"電話",
+          customer_phone:"聯絡電話",
+          address:"地址",
+          shipping_address:"配送地址",
+          subtotal:"商品小計",
+          shipping_fee:"運費",
+          total:"總金額",
+          status:"訂單狀態",
+          notes:"備註",
+          created_at:"建立時間"
+        };
+
+        const lines = Object.entries(o)
+          .filter(([k])=>k!=="id")
+          .map(([k,v])=>
+            (labels[k]||k)+"："+(v??"")
+          );
+
+        const {data,error} = await db
+          .from("order_items")
+          .select("*")
+          .eq("order_id",o.id);
+
+        if(error) throw error;
+
+        lines.push("","【訂購商品】");
+
+        data.forEach(item=>{
+          lines.push(
+            (item.product_name||item.name||"商品")+
+            " × "+(item.quantity||0)+
+            "　"+money(item.line_total)
+          );
+        });
+
+        detail.textContent = lines.join("\n");
+      }catch(e){
+        detail.textContent = "讀取明細失敗："+e.message;
+      }
+    };
+
+    root.append(card);
+  });
+}
+
+$("search").oninput = renderOrders;
+$("refreshButton").onclick = loadOrders;
+
+$("logoutButton").onclick = async ()=>{
+  clearData();
+  const {error} = await db.auth.signOut();
+  message(error ? error.message : "已登出");
+};
+
+function csvCell(value){
+  let s = String(value??"");
+  if(/^[\s]*[=+\-@]/.test(s)){
+    s = "'"+s;
+  }
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+
+$("exportButton").onclick = async ()=>{
+  try{
+    if(!await checkAdmin()){
+      clearData();
+      return;
+    }
+
+    if(!orders.length){
+      message("目前沒有可匯出的訂單");
+      return;
+    }
+
+    const keys = [...new Set(
+      orders.flatMap(o=>Object.keys(o))
+    )];
+
+    const csv = [
+      keys.map(csvCell).join(","),
+      ...orders.map(o=>
+        keys.map(k=>csvCell(o[k])).join(",")
+      )
+    ].join("\r\n");
+
+    const blob = new Blob(
+      ["\uFEFF"+csv],
+      {type:"text/csv;charset=utf-8"}
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "新齋味訂單.csv";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(e){
+    message("匯出失敗："+e.message);
+  }
+};
+
+db.auth.onAuthStateChange(event=>{
+  if(event==="SIGNED_OUT") clearData();
+});
+</script>
+</body>
+</html>
