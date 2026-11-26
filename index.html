@@ -26,7 +26,7 @@ footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:
 .notice{font-size:14px;color:#725d50}
 @media(max-width:480px){h1{font-size:29px}.small{align-items:flex-start}.cart-actions{max-width:52%}}
 
-body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card:last-child{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card:last-child button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
+body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card:last-child{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card:last-child button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
 @media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
 </style>
 </head>
@@ -36,7 +36,7 @@ body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b2223
 <main><div class="offer"><strong>滿 NT$4,250 享免運</strong><br>訂購截止：2027/1/22<br>陸續出貨：1/25–2/1（依宅配公告調整）<br>未滿免運門檻，運費 NT$290</div>
 <section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
 <section id="family"><h2>小家庭專區</h2><div id="familyList"></div></section>
-<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">送出訂單後，請等候店家確認。</p></section>
+<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>自取免運；宅配滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">送出訂單後，請等候店家確認。</p></section>
 </main>
 <footer>內門新齋味｜傳統辦桌年菜</footer>
 <a class="fixed-cart" id="fixedCart" href="#cart">購物車｜0 件｜NT$0</a>
@@ -94,7 +94,7 @@ function renderCart(){
     const remove=document.createElement('button');remove.type='button';remove.textContent='移除一件';remove.addEventListener('click',()=>removeItem(i));
     right.append(amount,remove);line.append(name,right);list.append(line);
   });
-  document.getElementById('total').textContent='商品合計：'+money(sum)+'｜含運預估：'+money(sum?sum+(sum>=4250?0:290):0);
+  document.getElementById('total').textContent='商品合計：'+money(sum)+'｜含運預估：'+money(sum?sum+((document.getElementById('deliveryMethod')?.value==='自取'||sum>=4250)?0:290):0);
 }
 function makeButton(name,price){
   const button=document.createElement('button');button.type='button';button.textContent='加入購物車';
@@ -122,6 +122,8 @@ const checkoutSection = document.createElement('section');
 checkoutSection.innerHTML = `
   <h2>填寫訂購資料</h2>
   <form id="orderForm">
+    <p><label>取貨方式<select id="deliveryMethod"><option>宅配</option><option>自取</option></select></label></p>
+    <p><label>付款方式<select id="paymentMethod"><option>現金</option><option>轉帳</option><option>貨到付款</option></select></label></p>
     <p><label>訂購人姓名
       <input id="customerName" required>
     </label></p>
@@ -134,11 +136,11 @@ checkoutSection.innerHTML = `
     <p><label>收件人電話
       <input id="recipientPhone" type="tel" required>
     </label></p>
-    <p><label>宅配地址
+    <p id="addressRow"><label>宅配地址
       <input id="deliveryAddress" required>
     </label></p>
-    <p><label>希望配送日期
-      <input id="deliveryDate" type="date" required>
+    <p><label>希望出貨／自取日期
+      <input id="deliveryDate" type="date" min="2027-01-25" max="2027-02-01" required>
     </label></p>
     <p><label>訂單備註
       <textarea id="orderNotes"></textarea>
@@ -148,6 +150,14 @@ checkoutSection.innerHTML = `
   </form>
 `;
 document.getElementById('cart').after(checkoutSection);
+function updateDelivery(){
+ const pickup=document.getElementById('deliveryMethod').value==='自取';
+ document.getElementById('addressRow').hidden=pickup;
+ document.getElementById('deliveryAddress').required=!pickup;
+ renderCart();
+}
+document.getElementById('deliveryMethod').addEventListener('change',updateDelivery);
+updateDelivery();
 document.getElementById('orderForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -162,7 +172,9 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
   const data = {
     name: document.getElementById('customerName').value.trim(),
     phone: document.getElementById('customerPhone').value.trim(),
-    address: document.getElementById('deliveryAddress').value.trim(),
+    address: document.getElementById('deliveryMethod').value==='自取'?'':document.getElementById('deliveryAddress').value.trim(),
+    delivery_method: document.getElementById('deliveryMethod').value,
+    payment_method: document.getElementById('paymentMethod').value,
     date: document.getElementById('deliveryDate').value,
     notes: [
       '收件人：' + document.getElementById('recipientName').value.trim(),
@@ -198,7 +210,7 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
     message.textContent = '訂購成功！訂單編號：' + result.order_no;
     this.reset();
     cart.length = 0;
-    renderCart();
+    updateDelivery();
   } catch (error) {
     message.textContent = '送出失敗：' + error.message;
   } finally {
