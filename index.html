@@ -29,6 +29,7 @@ footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:
 body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card.bundle{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card.bundle button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
 @media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
 #orderForm input[type=checkbox]{display:inline;width:auto;margin:0 8px 0 0;accent-color:#a21e2c}#orderForm input,#orderForm select,#orderForm textarea{font-size:16px}#shopStatus,#orderMessage{white-space:pre-line;line-height:1.6}#orderMessage{padding:10px;background:#fff0ce;border-radius:8px}#orderMessage:empty{display:none}
+.purchase-controls{display:flex;flex-direction:column;gap:8px;margin-top:auto;min-width:0}.qty-control{display:flex;align-items:center;justify-content:center;gap:8px}.qty-control button,.card .qty-control button{width:36px;min-width:36px;height:36px;padding:0;margin:0;font-size:20px}.qty-control output{min-width:28px;text-align:center;font-weight:bold}.small .purchase-controls{flex:0 0 45%;max-width:180px}.card .purchase-controls>button{margin:0}.cart-actions .qty-control{gap:5px}
 </style>
 </head>
 <body>
@@ -77,11 +78,12 @@ function setButtons(){document.querySelectorAll('#productList button,#familyList
 async function checkSettings(){const rows=await readTable('shop_settings?id=eq.1&select=ordering_enabled,order_deadline,allow_after_deadline,closed_message');const x=rows[0];if(!x)throw Error('無法取得接單設定');accepting=x.ordering_enabled===true&&(x.allow_after_deadline===true||Date.now()<Date.parse(x.order_deadline));document.getElementById('shopStatus').textContent=accepting?'目前開放預購':(x.closed_message||'目前暫停接單');setButtons();return accepting;}
 
 const money=n=>'NT$'+n.toLocaleString('zh-TW');
-function add(name,price,id){
+function add(name,price,id,quantity=1){
   if(!accepting||busy||uncertain)return;
   const item=cart.find(x=>x.name===name);
-  if(item){if(item.qty>=100)return;item.qty++;}
-  else cart.push({name,price,id,qty:1});
+  if(!Number.isInteger(quantity)||quantity<1||quantity>100)return;
+  if(item){if(item.qty+quantity>100){alert("每項商品最多100份");return;}item.qty+=quantity;}
+  else cart.push({name,price,id,qty:quantity});
   renderCart();
 }
 function removeItem(i){
@@ -102,13 +104,17 @@ function renderCart(){
     const right=document.createElement('span');right.className='cart-actions';
     const amount=document.createElement('strong');amount.textContent=money(x.price*x.qty);
     const remove=document.createElement('button');remove.type='button';remove.textContent='移除一件';remove.addEventListener('click',()=>removeItem(i));
-    right.append(amount,remove);line.append(name,right);list.append(line);
+    const plus=document.createElement('button');plus.type='button';plus.textContent='＋';plus.setAttribute('aria-label','增加'+x.name+'一份');plus.addEventListener('click',()=>add(x.name,x.price,x.id));remove.textContent='－';remove.setAttribute('aria-label','減少'+x.name+'一份');const qty=document.createElement('span');qty.textContent=x.qty;const controls=document.createElement('span');controls.className='qty-control';controls.append(remove,qty,plus);right.append(amount,controls);line.append(name,right);list.append(line);
   });
   document.getElementById('total').textContent='商品合計：'+money(sum)+'｜含運預估：'+money(sum?sum+((document.getElementById('deliveryMethod')?.value==='自取'||sum>=4250)?0:290):0);
 }
 function makeButton(name,price,id){
   const button=document.createElement('button');button.type='button';button.textContent='加入購物車';
-  button.addEventListener('click',()=>add(name,price,id));return button;
+  const wrap=document.createElement('div');wrap.className='purchase-controls';
+  const controls=document.createElement('div');controls.className='qty-control';
+  let quantity=1;const value=document.createElement('output');value.textContent='1';
+  for(const [label,delta] of [['－',-1],['＋',1]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-label',(delta<0?'減少':'增加')+name+'數量');b.addEventListener('click',()=>{quantity=Math.max(1,Math.min(100,quantity+delta));value.textContent=quantity;});if(delta<0)controls.append(b,value);else controls.append(b);}
+  button.addEventListener('click',()=>add(name,price,id,quantity));wrap.append(controls,button);return wrap;
 }
 async function loadProducts(){
  const rows=await readTable('products?select=id,name,price,category,active,image_url&active=eq.true&order=id.asc');
