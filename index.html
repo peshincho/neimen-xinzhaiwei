@@ -26,15 +26,16 @@ footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:
 .notice{font-size:14px;color:#725d50}
 @media(max-width:480px){h1{font-size:29px}.small{align-items:flex-start}.cart-actions{max-width:52%}}
 
-body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card:last-child{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card:last-child button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
+body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card.bundle{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card.bundle button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
 @media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
+#orderForm input[type=checkbox]{display:inline;width:auto;margin:0 8px 0 0;accent-color:#a21e2c}#orderForm input,#orderForm select,#orderForm textarea{font-size:16px}#shopStatus,#orderMessage{white-space:pre-line;line-height:1.6}#orderMessage{padding:10px;background:#fff0ce;border-radius:8px}#orderMessage:empty{display:none}
 </style>
 </head>
 <body>
 <header><h1>內門新齋味</h1><h2>2027 新春年菜預購</h2><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
 <nav><a href="#products">經典年菜</a><a href="#family">小家庭專區</a><a href="#cart">購物車</a></nav>
 <main><div class="offer"><strong>滿 NT$4,250 享免運</strong><br>訂購截止：2027/1/22<br>陸續出貨：1/25–2/1（依宅配公告調整）<br>未滿免運門檻，運費 NT$290</div>
-<section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
+<p id="shopStatus" role="status">正在同步商品及接單狀態…</p><section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
 <section id="family"><h2>小家庭專區</h2><div id="familyList"></div></section>
 <section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>自取免運；宅配滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">送出訂單後，請等候店家確認。</p></section>
 </main>
@@ -67,15 +68,24 @@ const family=[
   ['香滷筍乾(一斤)',150]
 ];
 const cart=[];
+const base='https://jbwofjtmcvqmcapajtex.supabase.co';
+const key='sb_publishable_fxFpGtj8PqgAzwg3NdZelQ_Cz4WEwg1';
+let accepting=false, busy=false, uncertain=false;
+const headers={apikey:key};
+async function readTable(path){const r=await fetch(base+'/rest/v1/'+path,{headers,cache:'no-store'});if(!r.ok)throw Error('資料同步失敗');return r.json();}
+function setButtons(){document.querySelectorAll('#productList button,#familyList button,#orderForm button[type=submit]').forEach(b=>b.disabled=!accepting||busy||uncertain);}
+async function checkSettings(){const rows=await readTable('shop_settings?id=eq.1&select=ordering_enabled,order_deadline,allow_after_deadline,closed_message');const x=rows[0];if(!x)throw Error('無法取得接單設定');accepting=x.ordering_enabled===true&&(x.allow_after_deadline===true||Date.now()<Date.parse(x.order_deadline));document.getElementById('shopStatus').textContent=accepting?'目前開放預購':(x.closed_message||'目前暫停接單');setButtons();return accepting;}
+
 const money=n=>'NT$'+n.toLocaleString('zh-TW');
-function add(name,price){
+function add(name,price,id){
+  if(!accepting||busy||uncertain)return;
   const item=cart.find(x=>x.name===name);
-  if(item)item.qty++;
-  else cart.push({name,price,qty:1});
+  if(item){if(item.qty>=100)return;item.qty++;}
+  else cart.push({name,price,id,qty:1});
   renderCart();
 }
 function removeItem(i){
-  if(!cart[i])return;
+  if(!cart[i]||busy||uncertain)return;
   cart[i].qty--;
   if(cart[i].qty===0)cart.splice(i,1);
   renderCart();
@@ -96,27 +106,26 @@ function renderCart(){
   });
   document.getElementById('total').textContent='商品合計：'+money(sum)+'｜含運預估：'+money(sum?sum+((document.getElementById('deliveryMethod')?.value==='自取'||sum>=4250)?0:290):0);
 }
-function makeButton(name,price){
+function makeButton(name,price,id){
   const button=document.createElement('button');button.type='button';button.textContent='加入購物車';
-  button.addEventListener('click',()=>add(name,price));return button;
+  button.addEventListener('click',()=>add(name,price,id));return button;
 }
-const productList=document.getElementById('productList');
-products.forEach(([name,price,file])=>{
-  const card=document.createElement('div');card.className='card';
-  if(file){
-    const img=document.createElement('img');img.className='product-photo';img.src=imageBase+encodeURIComponent(file);
-    img.alt=name;img.loading='lazy';img.onerror=()=>img.remove();card.append(img);
-  }
-  const title=document.createElement('h3');title.textContent=name;
-  const amount=document.createElement('p');amount.className='price';amount.textContent=money(price);
-  card.append(title,amount,makeButton(name,price));productList.append(card);
-});
-const familyList=document.getElementById('familyList');
-family.forEach(([name,price])=>{
-  const line=document.createElement('div');line.className='small';
-  const info=document.createElement('span');info.textContent=name+'｜'+money(price);
-  line.append(info,makeButton(name,price));familyList.append(line);
-});
+async function loadProducts(){
+ const rows=await readTable('products?select=id,name,price,category,active,image_url&active=eq.true&order=id.asc');
+ const productList=document.getElementById('productList'),familyList=document.getElementById('familyList');
+ productList.replaceChildren();familyList.replaceChildren();
+ for(const p of rows){
+ const {id,name,price}=p;
+ if(!Number.isInteger(price)||price<0)continue;
+ const small=String(p.category).includes('小家庭')||family.some(x=>x[0]===name);
+ if(small){const line=document.createElement('div');line.className='small';const info=document.createElement('span');info.textContent=name+'｜'+money(price);line.append(info,makeButton(name,price,id));familyList.append(line);continue;}
+ const card=document.createElement('div');card.className='card';const bundle=id===14||name.includes('桌菜');if(bundle)card.classList.add('bundle');
+ const old=products.find(x=>x[0]===name)?.[2];
+ if(!bundle&&(p.image_url||old)){const img=document.createElement('img');img.className='product-photo';img.alt=name;img.loading='lazy';const fallback=old?imageBase+encodeURIComponent(old):'';img.src=p.image_url||fallback;img.onerror=()=>{if(fallback&&img.src!==fallback)img.src=fallback;else img.remove();};card.append(img);}
+ const title=document.createElement('h3');title.textContent=name;const amount=document.createElement('p');amount.className='price';amount.textContent=money(price);card.append(title,amount,makeButton(name,price,id));productList.append(card);
+ }
+ setButtons();
+}
 renderCart();// 顯示訂購表單
 const checkoutSection = document.createElement('section');
 checkoutSection.innerHTML = `
@@ -130,6 +139,7 @@ checkoutSection.innerHTML = `
     <p><label>訂購人電話
       <input id="customerPhone" type="tel" required>
     </label></p>
+    <p><label><input type="checkbox" id="sameRecipient">收件人同訂購人</label></p>
     <p><label>收件人姓名
       <input id="recipientName" required>
     </label></p>
@@ -146,7 +156,7 @@ checkoutSection.innerHTML = `
       <textarea id="orderNotes"></textarea>
     </label></p>
     <button type="submit">確認送出訂單</button>
-    <p id="orderMessage"></p>
+    <p id="orderMessage" role="status" aria-live="polite"></p>
   </form>
 `;
 document.getElementById('cart').after(checkoutSection);
@@ -158,12 +168,17 @@ function updateDelivery(){
 }
 document.getElementById('deliveryMethod').addEventListener('change',updateDelivery);
 updateDelivery();
+function syncRecipient(){const same=document.getElementById('sameRecipient').checked;for(const [a,b] of [['customerName','recipientName'],['customerPhone','recipientPhone']]){const dest=document.getElementById(b);dest.readOnly=same;if(same)dest.value=document.getElementById(a).value;}}
+for(const id of ['sameRecipient','customerName','customerPhone'])document.getElementById(id).addEventListener('input',syncRecipient);
+setButtons();
+(async()=>{try{await loadProducts();await checkSettings();}catch(e){accepting=false;setButtons();document.getElementById('shopStatus').textContent='無法同步商品或接單設定，請重新整理後再試。';}})();
 document.getElementById('orderForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const message = document.getElementById('orderMessage');
   const button = this.querySelector('button[type="submit"]');
 
+  if(busy||uncertain||!accepting)return;
   if (!cart.length) {
     message.textContent = '請先選購商品';
     return;
@@ -176,27 +191,23 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
     delivery_method: document.getElementById('deliveryMethod').value,
     payment_method: document.getElementById('paymentMethod').value,
     date: document.getElementById('deliveryDate').value,
-    notes: [
-      '收件人：' + document.getElementById('recipientName').value.trim(),
-      '收件電話：' + document.getElementById('recipientPhone').value.trim(),
-      document.getElementById('orderNotes').value.trim()
-    ].join('\n'),
-    items: cart.map(x => ({
-      name: x.name,
-      price: x.price,
-      quantity: x.qty
-    }))
+    recipient_name: document.getElementById('recipientName').value.trim(),
+    recipient_phone: document.getElementById('recipientPhone').value.trim(),
+    notes: document.getElementById('orderNotes').value.trim(),
+    items: cart.map(x => ({id:x.id,quantity:x.qty}))
   };
 
+  busy=true;setButtons();
   button.disabled = true;
   message.textContent = '訂單送出中，請稍候…';
 
   try {
+    if(!await checkSettings()){message.textContent='目前暫停接單';return;}
     const response = await fetch(
       'https://jbwofjtmcvqmcapajtex.supabase.co/functions/v1/create-order',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', apikey:key },
         body: JSON.stringify(data)
       }
     );
@@ -207,14 +218,14 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
       throw new Error(result.error || '訂單送出失敗');
     }
 
-    message.textContent = '訂購成功！訂單編號：' + result.order_no;
-    this.reset();
+    message.textContent = '訂購成功！訂單編號：' + result.order_no + '\n商品小計：'+money(result.subtotal)+'\n運費：'+money(result.shipping_fee)+'\n總金額：'+money(result.total)+'\n請保留訂單編號，等候店家確認。';
+    this.reset();syncRecipient();
     cart.length = 0;
     updateDelivery();
   } catch (error) {
-    message.textContent = '送出失敗：' + error.message;
+    uncertain=true;message.textContent = '未能確認訂單結果：' + error.message + '。請先聯絡店家確認是否已收到訂單，勿重複送出。';
   } finally {
-    button.disabled = false;
+    busy=false;setButtons();
   }
 });
 </script>
