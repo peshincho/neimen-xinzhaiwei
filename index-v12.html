@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>內門新齋味｜年菜訂購</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff8f0;color:#38251d;font-family:Arial,'Noto Sans TC',sans-serif}
+header{background:#9d1725;color:white;text-align:center;padding:35px 15px}
+h1{margin:0;font-size:34px}header p{color:#ffe1a1}
+nav{text-align:center;background:#f6dfb6;padding:15px}
+nav a{display:inline-block;margin:5px 10px;color:#8d1720;font-weight:bold}
+main{max-width:1000px;margin:auto;padding:20px}
+h2{color:#9d1725;border-bottom:2px solid #d7aa60;padding-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 9px #0001}
+.product-photo {width: 100%;aspect-ratio: 4 / 3;object-fit: contain;background: #fff8f0;border-radius: 12px;display: block;}
+.price{color:#b21d29;font-weight:bold;font-size:20px}
+button{background:#a21e2c;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-size:15px}
+button:hover{background:#801621}
+.small{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #eee;padding:15px 0}
+.small span{min-width:0}.cart-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.cart-actions button{padding:8px}
+footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:40px}
+.notice{font-size:14px;color:#725d50}
+@media(max-width:480px){h1{font-size:29px}.small{align-items:flex-start}.cart-actions{max-width:52%}}
+
+body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card.bundle{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card.bundle button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
+@media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
+.qty{display:flex;align-items:center;gap:4px;margin:6px 0}.qty button{width:36px!important;flex:none;padding:8px!important;margin:0!important}.qty input{width:48px;min-width:0;text-align:center;padding:8px 2px;border:1px solid #d6c6b5;border-radius:6px;font-size:16px}.small{flex-wrap:wrap}.cart-actions{max-width:none!important}.cart-actions .qty{margin:0}.purchase{display:flex;flex-direction:column;gap:5px}.purchase button{margin-top:0}.cart-summary{line-height:1.8;background:#fff0ce;padding:12px;border-radius:8px}.cart-actions .delete{background:#725d50}#stockMessage{color:#8d1720;font-weight:bold} .qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+<header><h1>內門新齋味</h1><h2>2027 新春年菜預購</h2><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
+<nav><a href="#products">經典年菜</a><a href="#family">小家庭專區</a><a href="#cart">購物車</a></nav>
+<main><div class="offer"><strong>滿 NT$4,250 享免運</strong><br>訂購截止：2027/1/22<br>陸續出貨：1/25–2/1（依宅配公告調整）<br>未滿免運門檻，運費 NT$290</div>
+<section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
+<section id="family"><h2>小家庭專區</h2><div id="familyList"></div></section>
+<section id="cart"><h2>我的購物車</h2><div id="cartList">尚未選購商品</div><h3 id="total">商品合計：NT$0</h3><p>自取免運；宅配滿 NT$4,250 免運，未滿運費 NT$290。</p><p class="notice">送出訂單後，請等候店家確認。</p></section>
+</main>
+<footer>內門新齋味｜傳統辦桌年菜</footer>
+<a class="fixed-cart" id="fixedCart" href="#cart">購物車｜0 件｜NT$0</a>
+<script>
+'use strict';
+const base='https://jbwofjtmcvqmcapajtex.supabase.co';
+const key='sb_publishable_fxFpGtj8PqgAzwg3NdZelQ_Cz4WEwg1';
+const headers={apikey:key};
+let products=[], accepting=false, settings=null;
+async function readTable(table,query=''){
+ const r=await fetch(base+'/rest/v1/'+table+'?'+query,{headers,cache:'no-store'});
+ if(!r.ok)throw Error('資料同步失敗'); return r.json();
+}
+const cart=[];
+const money=n=>'NT$'+n.toLocaleString('zh-TW');
+let busy=false, sold=new Set(), revision=0;
+const stockMessage=document.createElement('p'); stockMessage.id="stockMessage"; stockMessage.setAttribute('role','status'); document.getElementById('cart').prepend(stockMessage);
+async function checkStock(items){
+ const r=await fetch(base+'/rest/v1/rpc/check_shop_cart_stock_v11',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({p_items:items.map(x=>({product_id:products.find(p=>p.name===x.name)?.id,quantity:x.qty}))})});
+ if(!r.ok)throw Error('庫存確認失敗，請稍後再試'); return (await r.json())===true;
+}
+const selected=new Map();
+const validQty=n=>Number.isInteger(n)&&n>=1&&n<=999;
+function quantityControl(initial,onChange,disabled=false){
+ const wrap=document.createElement('div');wrap.className='qty';
+ const input=document.createElement('input');input.type='number';input.min=1;input.max=999;input.step=1;input.inputMode='numeric';input.value=initial;input.setAttribute('aria-label','數量');
+ const commit=n=>{if(!validQty(n)){input.value=initial;return;}input.value=n;onChange(n);};
+ for(const [label,delta] of [['−',-1],['＋',1]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.setAttribute('aria-label',delta<0?'減少數量':'增加數量');b.onclick=()=>commit(Math.max(1,Math.min(999,(Number(input.value)||1)+delta)));if(delta<0)wrap.append(b,input);else wrap.append(b);}
+ input.disabled=disabled;input.onchange=()=>commit(Number(input.value));return {wrap,input};
+}
+async function changeCart(name,price,qty,absolute=false){
+ if(busy||!validQty(qty))return false;
+ const next=cart.map(x=>({...x}));const item=next.find(x=>x.name===name);const old=item?.qty||0;const target=absolute?qty:old+qty;
+ if(!validQty(target))return false;
+ if(target>old&&!accepting)return false;
+ busy=true;const rev=revision;
+ try{if(item)item.qty=target;else next.push({name,price,qty:target});
+ if(target>old&&!await checkStock(next))throw Error('已達可訂購數量上限，請調整購物車。');
+ if(rev!==revision)throw Error('商品已更新，請重新操作。');
+ cart.splice(0,cart.length,...next);revision++;stockMessage.textContent=name+'：購物車內共 '+target+' 件';return true;
+ }catch(e){stockMessage.textContent=e.message;alert(e.message);return false;}finally{busy=false;renderCart();}
+}
+function renderCart(){
+ const sum=cart.reduce((s,x)=>s+x.price*x.qty,0);
+ document.getElementById('fixedCart').textContent='購物車｜'+cart.reduce((s,x)=>s+x.qty,0)+' 件｜'+money(sum);
+ const list=document.getElementById('cartList');list.replaceChildren();if(!cart.length)list.textContent='尚未選購商品';
+ cart.forEach(x=>{const line=document.createElement('div');line.className='small';const name=document.createElement('span');name.textContent=x.name+'（單價 '+money(x.price)+'）';const right=document.createElement('span');right.className='cart-actions';const control=quantityControl(x.qty,async n=>{if(!await changeCart(x.name,x.price,n,true))renderCart();});const amount=document.createElement('strong');amount.textContent=money(x.price*x.qty);const remove=document.createElement('button');remove.type='button';remove.className='delete';remove.textContent='刪除';remove.onclick=()=>{if(busy)return;const i=cart.findIndex(y=>y.name===x.name);if(i>=0)cart.splice(i,1);revision++;renderCart();};right.append(control.wrap,amount,remove);line.append(name,right);list.append(line);});
+ const pickup=document.getElementById('deliveryMethod')?.value==='自取';const shipping=!sum||pickup||sum>=4250?0:290;
+ document.getElementById('total').textContent='商品合計：'+money(sum)+'｜運費：'+money(shipping)+'｜總計：'+money(sum+shipping);
+ let hint=document.getElementById('freeShipping');if(!hint){hint=document.createElement('p');hint.id='freeShipping';document.getElementById('total').after(hint);}hint.textContent=pickup?'自取免運':sum>=4250?'已達免運門檻！':sum?'再選購 '+money(4250-sum)+' 即享宅配免運':'';
+}
+function makePurchase(p){
+ const box=document.createElement('div');box.className='purchase';const disabled=!accepting||sold.has(p.id);const control=quantityControl(selected.get(p.id)||1,n=>{selected.set(p.id,n);subtotal.textContent='小計：'+money(n*p.price);},disabled);const subtotal=document.createElement('span');subtotal.className='notice';subtotal.textContent='小計：'+money((selected.get(p.id)||1)*p.price);const button=document.createElement('button');button.type='button';button.disabled=disabled;button.textContent=sold.has(p.id)?'已售完':'加入購物車';const feedback=document.createElement('span');feedback.className='notice';feedback.setAttribute('role','status');button.onclick=async()=>{const n=Number(control.input.value);if(!validQty(n)){feedback.textContent='請輸入 1～999 的整數';return;}if(busy)return;button.disabled=true;try{if(await changeCart(p.name,p.price,n)){selected.set(p.id,1);control.input.value=1;subtotal.textContent='小計：'+money(p.price);feedback.textContent='已加入 '+n+' 件';}}finally{button.disabled=!accepting||sold.has(p.id);}};box.append(control.wrap,subtotal,button,feedback);return box;
+}
+const productList=document.getElementById('productList');
+const familyList=document.getElementById('familyList');
+const banner=document.createElement('p');banner.setAttribute('role','status');banner.style.cssText='padding:12px;background:#fff0ce;text-align:center;font-weight:bold';document.querySelector('.offer').after(banner);
+function drawProducts(){
+ productList.replaceChildren();familyList.replaceChildren();
+ for(const p of products){
+ const small=String(p.category||'').includes('小家庭');
+ const card=document.createElement('div');card.className=small?'small':(p.name.includes('桌菜組')?'card bundle':'card');
+ if(!small&&p.image_url){const img=document.createElement('img');img.className='product-photo';img.src=p.image_url;img.alt=p.name;img.loading='lazy';img.onerror=()=>img.remove();card.append(img);}
+ const title=document.createElement(small?'span':'h3');title.textContent=p.name;
+ const amount=document.createElement('span');amount.className='price';amount.textContent=money(p.price);
+ card.append(title,amount,makePurchase(p));(small?familyList:productList).append(card);
+ }
+}
+async function sync(force=false){
+ if(busy&&force!==true)return;
+ try{
+ const [rows,config]=await Promise.all([readTable('products','select=id,name,price,category,active,image_url&active=eq.true&order=id'),readTable('shop_settings','select=*&id=eq.1')]);
+ if(!config.length)throw Error('找不到接單設定');
+ settings=config[0];products=rows;
+ const deadline=Date.parse(settings.order_deadline);
+ accepting=settings.ordering_enabled===true&&(settings.allow_after_deadline===true||(Number.isFinite(deadline)&&Date.now()<deadline));
+ banner.textContent=accepting?'年菜預購開放中':(settings.closed_message||'目前暫停接單');
+ for(let i=cart.length-1;i>=0;i--){const p=products.find(p=>p.name===cart[i].name);if(!p)cart.splice(i,1);else cart[i].price=p.price;}
+ const results=await Promise.all(products.map(async p=>[p.id,await checkStock([{name:p.name,qty:1}])]));
+ sold=new Set(results.filter(x=>!x[1]).map(x=>x[0]));revision++;
+ drawProducts();renderCart();
+ }catch(e){accepting=false;banner.textContent='暫時無法同步商品與接單設定，請稍後重新整理。';drawProducts();}
+ document.querySelector('#orderForm button[type=submit]').disabled=!accepting||busy;
+}
+renderCart();// 顯示訂購表單
+const checkoutSection = document.createElement('section');
+checkoutSection.innerHTML = `
+  <h2>填寫訂購資料</h2>
+  <form id="orderForm">
+    <p><label>取貨方式<select id="deliveryMethod"><option>宅配</option><option>自取</option></select></label></p>
+    <p><label>付款方式<select id="paymentMethod"><option>現金</option><option>轉帳</option><option>貨到付款</option></select></label></p>
+    <p><label>訂購人姓名
+      <input id="customerName" required>
+    </label></p>
+    <p><label>訂購人電話
+      <input id="customerPhone" type="tel" required>
+    </label></p>
+    <p><label><input type="checkbox" id="sameRecipient" style="display:inline;width:auto;margin-right:8px">收件人同訂購人</label></p>
+    <p><label>收件人姓名
+      <input id="recipientName" required>
+    </label></p>
+    <p><label>收件人電話
+      <input id="recipientPhone" type="tel" required>
+    </label></p>
+    <p id="addressRow"><label>宅配地址
+      <input id="deliveryAddress" required>
+    </label></p>
+    <p><label>希望出貨／自取日期
+      <input id="deliveryDate" type="date" min="2027-01-25" max="2027-02-01" required>
+    </label></p>
+    <p><label>訂單備註
+      <textarea id="orderNotes"></textarea>
+    </label></p>
+    <button type="submit">確認送出訂單</button>
+    <p id="orderMessage"></p>
+  </form>
+`;
+document.getElementById('cart').after(checkoutSection);
+function updateDelivery(){
+ const pickup=document.getElementById('deliveryMethod').value==='自取';
+ document.getElementById('addressRow').hidden=pickup;
+ document.getElementById('deliveryAddress').required=!pickup;
+ renderCart();
+}
+document.getElementById('deliveryMethod').addEventListener('change',updateDelivery);
+updateDelivery();
+function copyRecipient(){if(document.getElementById('sameRecipient').checked){document.getElementById('recipientName').value=document.getElementById('customerName').value;document.getElementById('recipientPhone').value=document.getElementById('customerPhone').value;}}
+for(const id of ['customerName','customerPhone'])document.getElementById(id).addEventListener('input',copyRecipient);
+document.getElementById('sameRecipient').addEventListener('change',copyRecipient);
+document.getElementById('orderForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const message = document.getElementById('orderMessage');
+  const button = this.querySelector('button[type="submit"]');
+
+  if (!cart.length) {
+    message.textContent = '請先選購商品';
+    return;
+  }
+
+  if(busy)return;
+  busy=true;button.disabled=true;
+  try {
+  const before=JSON.stringify(cart);
+  await sync(true);
+  if(!accepting){message.textContent='目前無法接單';return;}
+  if(before!==JSON.stringify(cart)){message.textContent='商品或價格已更新，請重新確認購物車。';return;}
+  if(!await checkStock(cart)){message.textContent="庫存不足，請調整購物車。";return;}
+  const data = {
+    recipient_name: document.getElementById('recipientName').value.trim(),
+    recipient_phone: document.getElementById('recipientPhone').value.trim(),
+    name: document.getElementById('customerName').value.trim(),
+    phone: document.getElementById('customerPhone').value.trim(),
+    address: document.getElementById('deliveryMethod').value==='自取'?'':document.getElementById('deliveryAddress').value.trim(),
+    delivery_method: document.getElementById('deliveryMethod').value,
+    payment_method: document.getElementById('paymentMethod').value,
+    date: document.getElementById('deliveryDate').value,
+    notes: document.getElementById('orderNotes').value.trim(),
+    items: cart.map(x => ({
+      product_id: products.find(p=>p.name===x.name)?.id,
+      name: x.name,
+      price: x.price,
+      quantity: x.qty
+    }))
+  };
+
+  button.disabled = true;
+  message.textContent = '訂單送出中，請稍候…';
+
+    const response = await fetch(
+      'https://jbwofjtmcvqmcapajtex.supabase.co/functions/v1/create-order',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || '訂單送出失敗');
+    }
+
+    message.textContent = '訂購成功！訂單編號：' + result.order_no + '。請等候店家確認。' + (Number.isFinite(result.total)?' 訂單總額：'+money(result.total):'');
+    this.reset();
+    cart.length = 0;
+    updateDelivery();
+  } catch (error) {
+    message.textContent = '送出失敗：' + error.message;
+  } finally {
+    busy=false;button.disabled = !accepting;
+  }
+});
+sync();
+window.addEventListener("focus",sync);
+setInterval(sync,60000);
+</script>
+</body>
+</html>
