@@ -20,4 +20,4 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase functions deploy line-notify --project-ref jbwofjtmcvqmcapajtex
+supabase functions deploy line-notify --remote=jbwofjtmcvqmcapajtex --yes
