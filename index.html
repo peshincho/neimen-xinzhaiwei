@@ -34,6 +34,9 @@ body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b2223
 header{position:relative;overflow:hidden;padding:52px 18px 44px;background:radial-gradient(ellipse at 50% 0,#bc3940 0,transparent 65%),linear-gradient(135deg,#650d1b,#a31b29);border-bottom:5px solid #d7aa60}
 header:before,header:after{content:'';position:absolute;width:100px;height:100px;border:1px solid #e8ba65;border-radius:50%;opacity:.45;pointer-events:none;top:-42px}header:before{left:-30px;box-shadow:0 0 0 9px #e8ba6522,0 0 0 19px #e8ba6518}header:after{right:-30px;box-shadow:0 0 0 9px #e8ba6522,0 0 0 19px #e8ba6518}
 header h1{font-family:Georgia,'Noto Serif TC',serif;letter-spacing:.12em;font-size:clamp(32px,6vw,54px);color:#fff0c8}header h2{font-size:clamp(23px,4vw,34px);letter-spacing:.06em}header p{line-height:1.7}.hero-kicker{font-size:13px;letter-spacing:.2em;color:#f4d594;margin-bottom:12px}.hero-link{display:inline-block;margin-top:16px;padding:12px 26px;border-radius:30px;background:#f2d18d;color:#77121e;text-decoration:none;font-weight:bold}nav a{text-decoration:none}main{max-width:1100px}.offer{border:1px solid #d9b576;box-shadow:0 3px 12px #7615220c;margin-top:8px}.offer strong{font-size:22px}.card{border:1px solid #eadcc9;box-shadow:0 4px 14px #5825190a;padding:12px}.product-photo{aspect-ratio:4/3;object-fit:contain;background:#fffaf2}.card.bundle{padding:20px}.card.bundle .product-photo{max-width:360px}.price{color:#9d1725}.fixed-cart{border-top:2px solid #d7aa60}#orderForm{background:white;border:1px solid #eadcc9;border-radius:14px;padding:18px}#orderForm button[type=submit]{width:100%;font-weight:bold}.small{gap:8px}#familyList{background:white;border:1px solid #eadcc9;border-radius:12px;padding:8px 14px}.hero-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:440px;margin:18px auto 0}.hero-photos:empty{display:none}.hero-photos img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff8f0;border:2px solid #d7aa60;border-radius:9px}.hero-photos img[hidden]{display:none}@media(max-width:480px){header{padding:36px 12px 30px}.card{padding:8px}.qty input{width:44px}.qty button{width:30px!important}.hero-photos{max-width:320px}}
+
+/* Final mobile layout */
+.bundle-details{margin:0 0 12px;padding:12px;border-top:1px solid #d7aa60;border-bottom:1px solid #d7aa60;color:#573829;line-height:1.6}.bundle-details strong{color:#9d1725}.bundle-dishes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin:8px 0 0;padding-left:20px;font-size:14px}.bundle-free{display:inline-block;color:#8d1720;background:#f2d18d;border-radius:20px;padding:3px 12px;font-weight:bold;font-size:13px;margin-left:6px}.card.bundle .purchase{max-width:360px}.card.bundle .purchase button{max-width:none}#familyList .small{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px 0;align-items:center}#familyList .small>.price{text-align:right;white-space:nowrap}#familyList .purchase{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px}#familyList .purchase .qty{margin:0}#familyList .purchase>button{padding:9px 8px;font-size:13px;white-space:nowrap}#familyList .purchase>span{font-size:13px;text-align:right}#familyList .small:last-child{border-bottom:0}@media(max-width:380px){#familyList .purchase{grid-template-columns:auto 1fr}#familyList .purchase>button{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -120,7 +123,13 @@ function drawProducts(){
  if(!small&&photoFor(p)){const img=document.createElement('img');img.className='product-photo';img.src=photoFor(p);img.alt=p.name;img.loading='lazy';img.onerror=()=>img.remove();card.append(img);}
  const title=document.createElement(small?'span':'h3');title.textContent=p.name;
  const amount=document.createElement('span');amount.className='price';amount.textContent=money(p.price);
- card.append(title,amount,makePurchase(p));(small?familyList:productList).append(card);
+ card.append(title,amount);
+ if(!small&&p.name.includes('桌菜組')){
+ const details=document.createElement('div');details.className='bundle-details';
+ details.innerHTML='<strong>8 道經典年菜・約 8–10 人份</strong>'+ (p.price>=4250?'<span class="bundle-free">宅配免運</span>':'') +'<ul class="bundle-dishes"><li>魚翅海鮮羹</li><li>唐朝一品（腳庫）</li><li>櫻花蝦米糕</li><li>蝦仁肉捲（八寶丸）</li><li>醬燒豬肋排</li><li>紹興醉蝦</li><li>鮑魚佛跳牆</li><li>醉雞腿</li></ul>';
+ card.append(details);
+ }
+ card.append(makePurchase(p));(small?familyList:productList).append(card);
  }
 }
 async function sync(force=false){
