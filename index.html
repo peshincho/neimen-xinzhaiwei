@@ -29,10 +29,15 @@ footer{text-align:center;background:#9d1725;color:white;padding:25px;margin-top:
 body{padding-bottom:85px}header{background:linear-gradient(135deg,#780e1b,#b22232);border-bottom:4px solid #d7aa60;padding:28px 12px}header h2{color:#ffe1a1;border:0;margin:10px 0;padding:0;font-size:25px}header p{margin:8px 0}.offer{background:#fff0ce;color:#8d1720;border-radius:10px;padding:12px;line-height:1.7;margin:0 0 22px;text-align:center}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{padding:10px;display:flex;flex-direction:column;min-width:0}.card h3{font-size:16px;margin:10px 0 4px;line-height:1.4}.card .price{margin:6px 0 12px}.card button{margin-top:auto;width:100%}.product-photo{background:#fff;aspect-ratio:4/3;object-fit:contain}.card.bundle{grid-column:1/-1;background:#fff0ce;border:1px solid #d7aa60}.card.bundle button{max-width:240px}#orderForm label{display:block;font-weight:bold}#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;padding:12px;margin-top:6px;border:1px solid #d6c6b5;border-radius:8px;font:inherit;background:white}#orderForm textarea{min-height:85px}.fixed-cart{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#921727;color:white;text-align:center;padding:15px 8px calc(15px + env(safe-area-inset-bottom));text-decoration:none;font-weight:bold;box-shadow:0 -2px 10px #0002}section{scroll-margin-top:12px}button:disabled{opacity:.6}#orderMessage{overflow-wrap:anywhere}
 @media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{font-size:15px}.card .price{font-size:18px}.card button{padding:10px 4px;font-size:14px}}
 .qty{display:flex;align-items:center;gap:4px;margin:6px 0}.qty button{width:36px!important;flex:none;padding:8px!important;margin:0!important}.qty input{width:48px;min-width:0;text-align:center;padding:8px 2px;border:1px solid #d6c6b5;border-radius:6px;font-size:16px}.small{flex-wrap:wrap}.cart-actions{max-width:none!important}.cart-actions .qty{margin:0}.purchase{display:flex;flex-direction:column;gap:5px}.purchase button{margin-top:0}.cart-summary{line-height:1.8;background:#fff0ce;padding:12px;border-radius:8px}.cart-actions .delete{background:#725d50}#stockMessage{color:#8d1720;font-weight:bold} .qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* 2027 red and gold visual refresh */
+header{position:relative;overflow:hidden;padding:52px 18px 44px;background:radial-gradient(ellipse at 50% 0,#bc3940 0,transparent 65%),linear-gradient(135deg,#650d1b,#a31b29);border-bottom:5px solid #d7aa60}
+header:before,header:after{content:'';position:absolute;width:100px;height:100px;border:1px solid #e8ba65;border-radius:50%;opacity:.45;pointer-events:none;top:-42px}header:before{left:-30px;box-shadow:0 0 0 9px #e8ba6522,0 0 0 19px #e8ba6518}header:after{right:-30px;box-shadow:0 0 0 9px #e8ba6522,0 0 0 19px #e8ba6518}
+header h1{font-family:Georgia,'Noto Serif TC',serif;letter-spacing:.12em;font-size:clamp(32px,6vw,54px);color:#fff0c8}header h2{font-size:clamp(23px,4vw,34px);letter-spacing:.06em}header p{line-height:1.7}.hero-kicker{font-size:13px;letter-spacing:.2em;color:#f4d594;margin-bottom:12px}.hero-link{display:inline-block;margin-top:16px;padding:12px 26px;border-radius:30px;background:#f2d18d;color:#77121e;text-decoration:none;font-weight:bold}nav a{text-decoration:none}main{max-width:1100px}.offer{border:1px solid #d9b576;box-shadow:0 3px 12px #7615220c;margin-top:8px}.offer strong{font-size:22px}.card{border:1px solid #eadcc9;box-shadow:0 4px 14px #5825190a;padding:12px}.product-photo{aspect-ratio:4/3;object-fit:contain;background:#fffaf2}.card.bundle{padding:20px}.card.bundle .product-photo{max-width:360px}.price{color:#9d1725}.fixed-cart{border-top:2px solid #d7aa60}#orderForm{background:white;border:1px solid #eadcc9;border-radius:14px;padding:18px}#orderForm button[type=submit]{width:100%;font-weight:bold}.small{gap:8px}#familyList{background:white;border:1px solid #eadcc9;border-radius:12px;padding:8px 14px}.hero-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:440px;margin:18px auto 0}.hero-photos:empty{display:none}.hero-photos img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff8f0;border:2px solid #d7aa60;border-radius:9px}.hero-photos img[hidden]{display:none}@media(max-width:480px){header{padding:36px 12px 30px}.card{padding:8px}.qty input{width:44px}.qty button{width:30px!important}.hero-photos{max-width:320px}}
 </style>
 </head>
 <body>
-<header><h1>內門新齋味</h1><h2>2027 新春年菜預購</h2><p>傳承辦桌好滋味・團圓年菜幸福上桌</p></header>
+<header><div class="hero-kicker">傳統辦桌 ・ 新春團圓</div><h1>內門新齋味</h1><h2>2027 新春年菜預購</h2><p>傳承辦桌好滋味・團圓年菜幸福上桌</p><div class="hero-photos" id="heroPhotos" aria-label="招牌年菜"></div><a class="hero-link" href="#products">立即選購年菜</a></header>
 <nav><a href="#products">經典年菜</a><a href="#family">小家庭專區</a><a href="#cart">購物車</a></nav>
 <main><div class="offer"><strong>滿 NT$4,250 享免運</strong><br>訂購截止：2027/1/22<br>陸續出貨：1/25–2/1（依宅配公告調整）<br>未滿免運門檻，運費 NT$290</div>
 <section id="products"><h2>經典年菜</h2><div class="grid" id="productList"></div></section>
@@ -95,7 +100,16 @@ function makePurchase(p){
 const productList=document.getElementById('productList');
 const familyList=document.getElementById('familyList');
 const banner=document.createElement('p');banner.setAttribute('role','status');banner.style.cssText='padding:12px;background:#fff0ce;text-align:center;font-weight:bold';document.querySelector('.offer').after(banner);
+function drawHeroPhotos(){
+ const root=document.getElementById('heroPhotos');root.replaceChildren();
+ for(const name of ['腳庫','封肉','櫻花蝦米糕']){
+  const p=products.find(x=>x.image_url&&x.name.includes(name)&&!String(x.category||'').includes('小家庭'));
+  if(!p)continue;
+  const img=document.createElement('img');img.src=p.image_url;img.alt=p.name;img.onerror=()=>img.remove();root.append(img);
+ }
+}
 function drawProducts(){
+ drawHeroPhotos();
  productList.replaceChildren();familyList.replaceChildren();
  for(const p of products){
  const small=String(p.category||'').includes('小家庭');
